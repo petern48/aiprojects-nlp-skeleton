@@ -49,7 +49,6 @@ def starting_train(train_dataset, val_dataset, model, hyperparameters, n_eval):
             labels.to(device)
             outputs = model(samples)
 
-            outputs = outputs.reshape(-1,1)
             labels = labels.reshape(-1,1).float()
 
             # Backpropagation and gradient descent
@@ -59,7 +58,7 @@ def starting_train(train_dataset, val_dataset, model, hyperparameters, n_eval):
             optimizer.zero_grad()  # reset gradients before next iteration
 
 
-            # # Periodically evaluate our model + log to Tensorboard
+            # Periodically evaluate our model + log to Tensorboard
             # if step % n_eval == 0:
             #     # TODO:
             #     # Compute training loss and accuracy.
@@ -112,6 +111,7 @@ def evaluate(val_loader, model, loss_fn):
     for batch in tqdm(val_loader):
         val_samples, val_labels = batch
         outputs = model(val_samples)
+        val_labels = val_samples.reshape(-1, 1).float()
         val_loss = loss_fn(outputs, val_labels)
 
         val_accuracy = compute_accuracy(outputs, val_labels)

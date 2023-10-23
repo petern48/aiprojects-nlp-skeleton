@@ -20,6 +20,4 @@ class StartingNetwork(torch.nn.Module):
         x = self.fc1(x.to(torch.float32))
         x = self.fc2(x)
         x = self.sigmoid(x)
-        return x
-
-
+        return x.reshape(-1, 1)
