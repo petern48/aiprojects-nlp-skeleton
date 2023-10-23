@@ -59,24 +59,24 @@ def starting_train(train_dataset, val_dataset, model, hyperparameters, n_eval):
 
 
             # Periodically evaluate our model + log to Tensorboard
-            # if step % n_eval == 0:
-            #     # TODO:
-            #     # Compute training loss and accuracy.
-            #     # Log the results to Tensorboard.
-            #     with torch.no_grad():
-            #         accuracy = compute_accuracy(outputs, labels)
+            if step % n_eval == 0:
+                # TODO:
+                # Compute training loss and accuracy.
+                # Log the results to Tensorboard.
+                with torch.no_grad():
+                    accuracy = compute_accuracy(outputs, labels)
 
-            #         writer.add_scalar('Training Loss', loss, epoch)
-            #         writer.add_scalar('Training Accuracy', accuracy, epoch)
+                    writer.add_scalar('Training Loss', loss, epoch)
+                    writer.add_scalar('Training Accuracy', accuracy, epoch)
 
 
-            #         # TODO:
-            #         # Compute validation loss and accuracy.
-            #         # Log the results to Tensorboard.
-            #         # Don't forget to turn off gradient calculations!
-            #         val_loss, val_accuracy = evaluate(val_loader, model, loss_fn)
-            #         writer.add_scalar('Validation Loss', val_loss, epoch)
-            #         writer.add_scalar('Validation Accuracy', val_accuracy, epoch)
+                    # TODO:
+                    # Compute validation loss and accuracy.
+                    # Log the results to Tensorboard.
+                    # Don't forget to turn off gradient calculations!
+                    val_loss, val_accuracy = evaluate(val_loader, model, loss_fn)
+                    writer.add_scalar('Validation Loss', val_loss, epoch)
+                    writer.add_scalar('Validation Accuracy', val_accuracy, epoch)
 
             step += 1
 
@@ -111,7 +111,7 @@ def evaluate(val_loader, model, loss_fn):
     for batch in tqdm(val_loader):
         val_samples, val_labels = batch
         outputs = model(val_samples)
-        val_labels = val_samples.reshape(-1, 1).float()
+        val_labels = val_labels.reshape(-1, 1).float()
         val_loss = loss_fn(outputs, val_labels)
 
         val_accuracy = compute_accuracy(outputs, val_labels)
