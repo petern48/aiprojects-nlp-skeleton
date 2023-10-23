@@ -49,33 +49,35 @@ def starting_train(train_dataset, val_dataset, model, hyperparameters, n_eval):
             labels.to(device)
             outputs = model(samples)
 
+            outputs = outputs.reshape(-1,1)
+            labels = labels.reshape(-1,1).float()
 
             # Backpropagation and gradient descent
             loss = loss_fn(outputs, labels)
-            loss.backwards()
+            loss.backward()
             optimizer.step()
-            optimizer.zero_grads()  # reset gradients before next iteration
+            optimizer.zero_grad()  # reset gradients before next iteration
 
 
-            # Periodically evaluate our model + log to Tensorboard
-            if step % n_eval == 0:
-                # TODO:
-                # Compute training loss and accuracy.
-                # Log the results to Tensorboard.
-                with torch.no_grad():
-                    accuracy = compute_accuracy(outputs, labels)
+            # # Periodically evaluate our model + log to Tensorboard
+            # if step % n_eval == 0:
+            #     # TODO:
+            #     # Compute training loss and accuracy.
+            #     # Log the results to Tensorboard.
+            #     with torch.no_grad():
+            #         accuracy = compute_accuracy(outputs, labels)
 
-                    writer.add_scalar('Training Loss', loss, epoch)
-                    writer.add_scalar('Training Accuracy', accuracy, epoch)
+            #         writer.add_scalar('Training Loss', loss, epoch)
+            #         writer.add_scalar('Training Accuracy', accuracy, epoch)
 
 
-                    # TODO:
-                    # Compute validation loss and accuracy.
-                    # Log the results to Tensorboard.
-                    # Don't forget to turn off gradient calculations!
-                    val_loss, val_accuracy = evaluate(val_loader, model, loss_fn)
-                    writer.add_scalar('Validation Loss', val_loss, epoch)
-                    writer.add_scalar('Validation Accuracy', val_accuracy, epoch)
+            #         # TODO:
+            #         # Compute validation loss and accuracy.
+            #         # Log the results to Tensorboard.
+            #         # Don't forget to turn off gradient calculations!
+            #         val_loss, val_accuracy = evaluate(val_loader, model, loss_fn)
+            #         writer.add_scalar('Validation Loss', val_loss, epoch)
+            #         writer.add_scalar('Validation Accuracy', val_accuracy, epoch)
 
             step += 1
 
