@@ -1,8 +1,10 @@
 import os
+import sys
 
 import constants
 from data.StartingDataset import StartingDataset
-from networks.StartingNetwork import StartingNetwork
+from data.GetEmbeddings import getEmbeddings
+from networks.StartingNetwork import BaseNetwork
 from train_functions.starting_train import starting_train
 import torch
 
@@ -18,10 +20,18 @@ def main():
     print("Batch size:", constants.BATCH_SIZE)
 
     # Initalize dataset and model. Then train the model!
-    data_path = "dev.csv"  #TODO: make sure you have train.csv downloaded in your project! this assumes it is in the project's root directory (ie the same directory as main) but you can change this as you please
-    train_dataset = StartingDataset(data_path)
-    val_dataset = StartingDataset(data_path)
-    model = StartingNetwork()
+    data_path = "dev.csv"  # TODO: make sure you have train.csv downloaded in your project! this assumes it is in the project's root directory (ie the same directory as main) but you can change this as you please
+    embeddings_path = 'glove.6B.50d.txt'
+    pad_token = '<pad>'
+    unk_token = '<unk>'
+    max_seq_length = 134
+
+    vocab_npa, embs_npa = getEmbeddings(embeddings_path, pad_token, unk_token)
+
+    train_dataset = StartingDataset(data_path, vocab_npa, pad_token, unk_token)
+    val_dataset = StartingDataset(data_path, vocab_npa, pad_token, unk_token)
+
+    model = BaseNetwork(embs_npa, max_seq_length, device)
     model.to(device)
     starting_train(
         train_dataset=train_dataset,
