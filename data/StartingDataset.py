@@ -39,11 +39,11 @@ class StartingDataset(torch.utils.data.Dataset):
             row = df.iloc[i]
 
             ids, seq_length = self.text_to_ids(text=row.question_text, pad_to_len=max_seq_length)
-            self.ids.append(ids.reshape(-1))  # Add .reshape(-1)
+            self.ids.append(ids.reshape(-1))
             self.seq_lengths.append(seq_length)
             self.labels.append(row.target)
             if row.target != 0 and row.target != 1:
-                print("NOOOO")
+                print("BAD target")
                 sys.exit()
 
         # lemmatize

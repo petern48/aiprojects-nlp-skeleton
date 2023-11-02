@@ -49,7 +49,6 @@ def starting_train(train_dataset, val_dataset, model, hyperparameters, n_eval):
             # batch[0] is id representation of sentence
             # batch[1] = max_seq_length 134
             # batch[2] = 1.
-            # sys.exit()
             samples, labels = batch[0], batch[2]
 
             samples.to(device)
@@ -57,7 +56,6 @@ def starting_train(train_dataset, val_dataset, model, hyperparameters, n_eval):
             outputs = model(samples)
 
             labels = labels.reshape(-1,1).float()
-            print("LABELS", labels[labels<1])
             # Backpropagation and gradient descent
             loss = loss_fn(outputs, labels)
             loss.backward()
@@ -65,7 +63,7 @@ def starting_train(train_dataset, val_dataset, model, hyperparameters, n_eval):
             optimizer.zero_grad()  # reset gradients before next iteration
 
 
-            # # Periodically evaluate our model + log to Tensorboard
+            # Periodically evaluate our model + log to Tensorboard
             # if step % n_eval == 0:
             #     # TODO:
             #     # Compute training loss and accuracy.

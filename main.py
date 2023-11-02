@@ -31,6 +31,8 @@ def main():
     train_dataset = StartingDataset(data_path, vocab_npa, pad_token, unk_token)
     val_dataset = StartingDataset(data_path, vocab_npa, pad_token, unk_token)
 
+    # dataloader
+
     model = BaseNetwork(embs_npa, max_seq_length, device)
     model.to(device)
     starting_train(
