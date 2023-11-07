@@ -21,3 +21,6 @@ class StartingNetwork(torch.nn.Module):
         x = self.fc2(x)
         x = self.sigmoid(x)
         return x.reshape(-1, 1)
+
+if __name__ == "__main__":
+    pass

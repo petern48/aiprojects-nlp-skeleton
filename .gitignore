@@ -4,4 +4,6 @@ __pycache__
 .vscode
 *.csv
 
+glove.840B.300d.txt
+
 training_summaries
