@@ -3,5 +3,6 @@ runs/
 __pycache__
 .vscode
 *.csv
+glove*
 
 training_summaries
