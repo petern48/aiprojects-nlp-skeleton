@@ -85,9 +85,11 @@ class StartingDataset(torch.utils.data.Dataset):
         Gets i-th sample of ids, seq_length, and label for this dataset item
         '''
         # reshape ids to collapse into 1D
-        return self.ids[i].reshape(-1), \
-            torch.tensor(self.seq_lengths[i]).long(), \
-            torch.tensor(self.labels[i], dtype=torch.float32)  # might need .type(torch.FloatTensor) instead 
+        batch = {'input_ids': self.ids[i].reshape(-1),
+            'seq_lengths': torch.tensor(self.seq_lengths[i]).long(),
+            'labels': torch.tensor(self.labels[i], dtype=torch.float32)
+        }
+        return batch 
 
 
     # TODO: return the size of the dataset
