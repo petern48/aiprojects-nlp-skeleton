@@ -4,6 +4,7 @@ import torch.optim as optim
 from tqdm import tqdm
 from torch.utils.tensorboard import SummaryWriter
 import sys
+import numpy 
 
 
 def starting_train(train_dataset, val_dataset, model, hyperparameters, n_eval):
@@ -64,28 +65,34 @@ def starting_train(train_dataset, val_dataset, model, hyperparameters, n_eval):
 
 
             # Periodically evaluate our model + log to Tensorboard
-            # if step % n_eval == 0:
-            #     # TODO:
-            #     # Compute training loss and accuracy.
-            #     # Log the results to Tensorboard.
-            #     with torch.no_grad():
-            #         accuracy = compute_accuracy(outputs, labels)
+            if step % n_eval == 0:
+                # TODO:
+                # Compute training loss and accuracy.
+                # Log the results to Tensorboard.
+                with torch.no_grad():
+                    accuracy = compute_accuracy(outputs, labels)
 
-            #         writer.add_scalar('Training Loss', loss, epoch)
-            #         writer.add_scalar('Training Accuracy', accuracy, epoch)
+                    writer.add_scalar('Training Loss', loss, epoch)
+                    writer.add_scalar('Training Accuracy', accuracy, epoch)
 
 
-            #         # TODO:
-            #         # Compute validation loss and accuracy.
-            #         # Log the results to Tensorboard.
-            #         # Don't forget to turn off gradient calculations!
-            #         val_loss, val_accuracy = evaluate(val_loader, model, loss_fn)
-            #         writer.add_scalar('Validation Loss', val_loss, epoch)
-            #         writer.add_scalar('Validation Accuracy', val_accuracy, epoch)
+                    # TODO:
+                    # Compute validation loss and accuracy.
+                    # Log the results to Tensorboard.
+                    # Don't forget to turn off gradient calculations!
+                    val_loss, val_accuracy = evaluate(val_loader, model, loss_fn)
+                    writer.add_scalar('Validation Loss', val_loss, epoch)
+                    writer.add_scalar('Validation Accuracy', val_accuracy, epoch)
 
             step += 1
 
         print()
+
+    # evaluate(
+    #     val_loader=val_dataset,
+    #     model=model,
+    #     loss_fn=loss_fn
+    # )
 
     writer.close()
 
@@ -103,6 +110,7 @@ def compute_accuracy(outputs, labels):
     """
 
     n_correct = (torch.round(outputs) == labels).sum().item()
+    # print(outputs.size())
     n_total = len(outputs)
     return n_correct / n_total
 
@@ -114,11 +122,12 @@ def evaluate(val_loader, model, loss_fn):
     TODO!
     """
     for batch in tqdm(val_loader):
-        val_samples, val_labels = batch
+        val_samples, val_labels = batch[0], batch[2]
         outputs = model(val_samples)
         val_labels = val_labels.reshape(-1, 1).float()
-        val_loss = loss_fn(outputs, val_labels)
-
+        val_labels_squeezed = torch.squeeze(val_labels)
+        outputs_squeezed = torch.squeeze(outputs)
+        val_loss = loss_fn(outputs_squeezed, val_labels_squeezed)
         val_accuracy = compute_accuracy(outputs, val_labels)
 
     return val_loss, val_accuracy

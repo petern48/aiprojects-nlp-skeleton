@@ -10,14 +10,7 @@ class BaseNetwork(torch.nn.Module):
 
     def __init__(self, embs_npa, device, freeze_embeddings=True):
         super().__init__()
-        # might need super(BaseNetwork, self).__init__()
-        self.vocab_size = embs_npa.shape[0]
-        # print('VOCAB SIZE', self.vocab_size)
-        self.embedding_dim = embs_npa.shape[1]
-        # print('EMBEDDING_DIM ', self.embedding_dim)
-        self.device = device
-
-        # freeze embeddings layer
+    
         if freeze_embeddings:
             print('Freezing embeddings layer')
 
@@ -26,6 +19,22 @@ class BaseNetwork(torch.nn.Module):
             torch.from_numpy(embs_npa).float(), 
             freeze=freeze_embeddings
         )
+        # might need super(BaseNetwork, self).__init__()
+        self.vocab_size = embs_npa.shape[0]
+        # print('VOCAB SIZE', self.vocab_size)
+        self.embedding_dim = embs_npa.shape[1]
+        # print('EMBEDDING_DIM ', self.embedding_dim)
+        self.device = device
+
+        nn.Sequential(
+            self.embedding_layer, 
+            torch.nn.Dropout(p=0.2), 
+            
+        )
+
+
+        # freeze embeddings layer
+
 
         # mid_dim = 134 * self.embedding_dim  # just for testing and trying to get things to work. 134 is max_seq_length
         # print('mid_dim ', mid_dim)  # number of samples 50
@@ -48,11 +57,11 @@ class BaseNetwork(torch.nn.Module):
 
         # x = input_ids.to(self.device)  # moved to gpu in training loop
         # input_ids are ints
-        print('input shape ', input_ids.shape)  # [32,134]
+        #print('input shape ', input_ids.shape)  # [32,134]
         embeds = self.embedding_layer(input_ids)
-        print('EMBEDS output SHAPE', embeds.shape)  # [32, 134, 50]  # dims of embeddings 50d
-        print(self.vocab_size, 'vocab')
-        print(self.embedding_dim, 'embedding dim')
+        #print('EMBEDS output SHAPE', embeds.shape)  # [32, 134, 50]  # dims of embeddings 50d
+        #print(self.vocab_size, 'vocab')
+        #print(self.embedding_dim, 'embedding dim')
         # print()
         # sys.exit()
         # .reshape(-1. 134 * 50)
