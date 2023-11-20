@@ -5,7 +5,6 @@ import sys
 
 class BaseNetwork(torch.nn.Module):
     """
-    Basic logistic regression example. You may need to double check the dimensions :)
     """
 
     def __init__(self, embs_npa, device, freeze_embeddings=True):
@@ -50,9 +49,6 @@ class BaseNetwork(torch.nn.Module):
         # input_ids are ints
         # print('input shape ', input_ids.shape)  # [32,134]
         embeds = self.embedding_layer(input_ids)
-        # print('EMBEDS output SHAPE', embeds.shape)  # [32, 134, 50]  # dims of embeddings 50d
-        # print(self.vocab_size, 'vocab')
-        # print(self.embedding_dim, 'embedding dim')
 
         # embeds are floats
         x = self.fc1(embeds)
