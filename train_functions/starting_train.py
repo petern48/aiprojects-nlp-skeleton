@@ -6,7 +6,7 @@ from torch.utils.tensorboard import SummaryWriter
 import sys
 
 
-def starting_train(train_dataset, val_dataset, model, hyperparameters, n_eval):
+def starting_train(train_dataset, val_dataset, model, hyperparameters, n_eval, device):
     """
     Trains and evaluates a model.
 
@@ -17,8 +17,7 @@ def starting_train(train_dataset, val_dataset, model, hyperparameters, n_eval):
         hyperparameters: Dictionary containing hyperparameters.
         n_eval:          Interval at which we evaluate our model.
     """
-
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model.train()
 
     # Get keyword arguments
     batch_size, epochs = hyperparameters["batch_size"], hyperparameters["epochs"]
@@ -36,7 +35,7 @@ def starting_train(train_dataset, val_dataset, model, hyperparameters, n_eval):
     # loss_fn = nn.CrossEntropyLoss()  # more for multi-class classification
     loss_fn = nn.BCELoss()
 
-    writer = SummaryWriter()  # tensorboard log
+    writer = SummaryWriter(filename_suffix=model.__class__.__name__)  # tensorboard log
 
     step = 0
     for epoch in range(epochs):
@@ -77,6 +76,9 @@ def starting_train(train_dataset, val_dataset, model, hyperparameters, n_eval):
                     writer.add_scalar('Validation Loss', val_loss, epoch)
                     writer.add_scalar('Validation Accuracy', val_accuracy, epoch)
 
+                    print(f"Validation Loss {val_loss}")
+                    print(f"Validation Accuracy {val_accuracy}")
+
             step += 1
 
         print()
@@ -91,7 +93,6 @@ def compute_accuracy(outputs, labels):
     Example input:
         outputs: [0.7, 0.9, 0.3, 0.2]
         labels:  [1, 1, 0, 1]
-
     Example output:
         0.75
     """
