@@ -5,11 +5,41 @@ import math
 import sys
 
 
+# ensure model dimension (d_model) is divisible by num heads
+class Transformer(torch.nn.Module):
+    def __init__(self, d_model, num_layers, num_heads, embs_npa):
+        super().__init__()
+        self.encoder = TransformerEncoder(d_model, num_layers, num_heads, embs_npa)
+
+        # self.decoders_layers = nn.ModuleList([Decoder() for i in range(n_layers)])
+
+        # ADDED
+        self.linear1 = nn.Linear(50, 1)
+        self.linear2 = nn.Linear(134, 1)
+
+        self.sigmoid = nn.Sigmoid()
+
+
+    def forward(self, x):
+        # print(x.shape)  # [32,134]
+        x = self.encoder(x)
+        # print(x.shape)  # [32,134,50]
+
+        x = self.linear1(x)
+        # print(x.shape)  # [32, 134, 1]
+        x = x.squeeze(2)
+        # print(x.shape)
+        x = self.linear2(x)
+        # print(x.shape)  # [32,1]
+        x = self.sigmoid(x)
+
+        # don't use sigmoid bc we use BCE loss later
+        return x
 
 
 class TransformerEncoder(torch.nn.Module):
     """Encoder network for Transformer"""
-    def __init__(self, d_model, n_layers, num_heads, embs_npa, max_seq_length, freeze_embeddings=True):
+    def __init__(self, d_model, n_layers, num_heads, embs_npa, freeze_embeddings=True):
         super().__init__()
         self.n_layers = n_layers
 
@@ -18,7 +48,7 @@ class TransformerEncoder(torch.nn.Module):
             freeze=freeze_embeddings
         )
 
-        self.positional_encoding = PositionalEncoding(d_model, max_seq_length)
+        self.positional_encoding = PositionalEncoding(d_model)
 
         self.encoding_layers = nn.ModuleList([EncoderLayer(d_model, num_heads) for i in range(n_layers)])
 
@@ -42,17 +72,18 @@ class EncoderLayer(torch.nn.Module):
     def __init__(self, d_model, num_heads, dropout=0.1):
         super().__init__()
         self.norm_1 = nn.LayerNorm(d_model, eps=1e-6)
-        self.norm_2 = nn.LayerNorm(d_model, eps=1e-6)
+        self.norm_2 = nn.LayerNorm(d_model, eps=1e-6)  # 2nd uncessary
         self.multi_head_attention = MultiHeadAttention(num_heads, d_model, dropout)
         self.ff = FFN(d_model)
         self.dropout_1 = nn.Dropout(dropout)
         self.dropout_2 = nn.Dropout(dropout)
-    
-    def forward(self, x, mask):
+
+
+    def forward(self, x, mask=None):
         # x2 = self.norm_1
         attn_output, _ = self.multi_head_attention([x, x, x, mask])
         attn_output = self.dropout_1(attn_output)
-        out1 = self.norm1(x + attn_output)
+        out1 = self.norm_1(x + attn_output)
 
         ffn_output = self.ff(out1)
         ffn_output = self.dropout_2(ffn_output)
@@ -65,51 +96,54 @@ class MultiHeadAttention(torch.nn.Module):
     def __init__(self, num_heads, d_model, dropout_rate=0.1):
         super().__init__()
         self.num_heads = num_heads
-        self.depth = d_model // num_heads  # d_k for splitting heads
+        self.d_k = d_model // num_heads  # depth for splitting heads
         self.d_model = d_model
 
-        self.query_dense = nn.Linear(d_model)
-        self.key_dense = nn.Linear(d_model)
-        self.value_dense = nn.Linear(d_model)
+        self.query_dense = nn.Linear(d_model, d_model)
+        self.key_dense = nn.Linear(d_model, d_model)
+        self.value_dense = nn.Linear(d_model, d_model)
 
         # self.dropout_rate = dropout_rate
         self.dropout = nn.Dropout(dropout_rate)
 
         self.out = nn.Linear(d_model, d_model)
 
+        self.softmax = nn.Softmax(dim=-1)
+
     
     def scaled_dot_prod(self, q, k, v, mask=None):
         """scaled dot product, where query, key, and value are vectors"""
         q_matmul_k = torch.matmul(q, k.transpose(-2, -1))
 
-        scaled_attention_logits = q_matmul_k / torch.sqrt(self.depth)  # d_k
+        scaled_attention_logits = q_matmul_k / math.sqrt(self.d_k)  # torch.sqrt(self.d_k)
 
         if mask is not None:
             scaled_attention_logits += (mask * -1e9)  # effectively ignore the masked values
 
-        attention_weights = nn.Softmax(scaled_attention_logits, dim=-1)  # scores
+        # attention_weights = nn.Softmax(scaled_attention_logits, dim=-1)  # scores
+        attention_weights = self.softmax(scaled_attention_logits)
 
         # consider applying dropout here
 
-        output = torch.mm(attention_weights, v)
+        output = torch.matmul(attention_weights, v)
 
         return output, attention_weights
 
 
     def split_heads(self, inputs, batch_size):
-        inputs = torch.reshape(inputs, (batch_size, -1, self.num_heads, self.depth))
+        inputs = torch.reshape(inputs, (batch_size, -1, self.num_heads, self.d_k))
         # transpose to get dimensions bs * h * sl * d_model
         return inputs.transpose(1, 2)  # check
 
     
-    def call(self, inputs):
+    def forward(self, inputs):
         query, key, value, mask = inputs
         batch_size = query.shape[0]
 
         # multiple input vectors times q, k, v matrics to get q, k, v, vectors
         query = self.query_dense(query)
         key = self.key_dense(key)
-        value = self.value_dense(mask)
+        value = self.value_dense(value)
 
         # split heads
         query = self.split_heads(query, batch_size)
@@ -126,33 +160,40 @@ class MultiHeadAttention(torch.nn.Module):
         return output, attention_weights
 
 
-
 class PositionalEncoding(torch.nn.Module):
-    def __init__(self, d_model, max_seq_length):
+    def __init__(self, d_model, max_seq_length = 134):
         super().__init__()
         self.d_model = d_model
         # perturb each embedding in some random way
 
         pe = torch.zeros(max_seq_length, d_model)  # positional encoding
-        for pos in range(max_seq_length):
-            # map every other one to sin or cos
-            for i in range(0, d_model, 2):
-                pe[pos, i] = math.sin(pos / (10000 ** ((2 * i) / d_model)))
-                pe[pos, i+1] = math.cos(pos / (10000 ** ((2 * i) / d_model)))
+        position = torch.arange(0, max_seq_length, dtype=torch.float).unsqueeze(1)
+        div_term = torch.exp(torch.arange(0, d_model, 2).float() * -(math.log(10000.0) / d_model))
 
-        pe = pe.unsqueeze(0)  # add dimension of size 1 at index 0
-        self.register_buffer('pe', pe)
+        pe[:, 0::2] = torch.sin(position * div_term)
+        pe[:, 1::2] = torch.cos(position * div_term)
+
+        self.register_buffer('pe', pe.unsqueeze(0))
+
+        # for pos in range(max_seq_length):
+        #     # map every other one to sin or cos
+        #     for i in range(0, d_model, 2):
+        #         pe[pos, i] = math.sin(pos / (10000 ** ((2 * i) / d_model)))
+        #         pe[pos, i+1] = math.cos(pos / (10000 ** ((2 * i) / d_model)))
+
+        # pe = pe.unsqueeze(0)  # add dimension of size 1 at index 0
+        # self.register_buffer('pe', pe)
     
     def forward(self, x):
-        # make embeddings relatively larger
-        x *= math.sqrt(self.d_model)
+        return x + self.pe[:, :x.size(1)]
 
-        # add constant to embedding
-        seq_length = x.size(1)
+        # # make embeddings relatively larger
+        # x *= math.sqrt(self.d_model)
+        # # add constant to embedding
+        # seq_length = x.size(1)
+        # x += Variable(self.pe[:,:seq_length], requires_grad=False)  # .cuda()
+        # return x
 
-        x += Variable(self.pe[:,:seq_length], requires_grad=False)  # .cuda()
-
-        return x
 
 
 class FFN(torch.nn.Module):
