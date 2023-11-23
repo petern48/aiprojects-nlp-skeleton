@@ -24,7 +24,6 @@ class BaseNetwork(torch.nn.Module):
             freeze=freeze_embeddings
         )
 
-        # mid_dim = 134 * self.embedding_dim  # just for testing and trying to get things to work. 134 is max_seq_length
         # [32, 134, 50]
         self.fc1 = nn.Linear(self.embedding_dim, 50)
         self.fc2 = nn.Linear(50, 1)  # last layer needs to have output dim 1
