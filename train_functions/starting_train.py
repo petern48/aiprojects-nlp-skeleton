@@ -62,22 +62,22 @@ def starting_train(train_dataset, val_dataset, model, hyperparameters, n_eval, d
             if step % n_eval == 0:
                 # Compute training loss and accuracy.
                 # Log the results to Tensorboard.
+                accuracy = compute_accuracy(outputs, labels)
+
+                writer.add_scalar('Training Loss', loss, epoch)
+                writer.add_scalar('Training Accuracy', accuracy, epoch)
+
                 with torch.no_grad():
-                    accuracy = compute_accuracy(outputs, labels)
-
-                    writer.add_scalar('Training Loss', loss, epoch)
-                    writer.add_scalar('Training Accuracy', accuracy, epoch)
-
-
+                    model.eval()
                     # Compute validation loss and accuracy.
                     # Log the results to Tensorboard.
-                    # Don't forget to turn off gradient calculations!
                     val_loss, val_accuracy = evaluate(val_loader, model, loss_fn)
                     writer.add_scalar('Validation Loss', val_loss, epoch)
                     writer.add_scalar('Validation Accuracy', val_accuracy, epoch)
 
                     print(f"Validation Loss {val_loss}")
                     print(f"Validation Accuracy {val_accuracy}")
+                    model.train()
 
             step += 1
 
