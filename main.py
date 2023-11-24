@@ -41,7 +41,8 @@ def main():
     val_dataset = Dataset(x_test, y_test, vocab_npa, pad_token, unk_token)
 
     # # TODO Load pretrained model
-    # if len(sys.argv) != 1:
+    if len(sys.argv) != 1:
+        pass
     #     model = torch.load(sys.argv[1])
 
 
