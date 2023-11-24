@@ -75,8 +75,8 @@ def starting_train(train_dataset, val_dataset, model, hyperparameters, n_eval, d
                     writer.add_scalar('Validation Loss', val_loss, epoch)
                     writer.add_scalar('Validation Accuracy', val_accuracy, epoch)
 
-                    print(f"Validation Loss {val_loss}")
-                    print(f"Validation Accuracy {val_accuracy}")
+                    # print(f"Validation Loss {val_loss}")
+                    # print(f"Validation Accuracy {val_accuracy}")
                     model.train()
 
             step += 1
