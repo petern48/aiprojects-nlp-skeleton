@@ -9,6 +9,11 @@ import sys
 class Transformer(torch.nn.Module):
     def __init__(self, d_model, num_layers, num_heads, embs_npa):
         super().__init__()
+        self.d_model = d_model
+        self.num_layers = num_layers
+        self.num_heads = num_heads
+        self.embs_npa = embs_npa
+
         self.encoder = TransformerEncoder(d_model, num_layers, num_heads, embs_npa)
 
         # self.decoders_layers = nn.ModuleList([Decoder() for i in range(n_layers)])
@@ -211,3 +216,27 @@ class FFN(torch.nn.Module):
         x = self.dropout(x)
         x = self.fc2(x)
         return x
+
+
+def save_transformer_model(model_save_path, model):
+    checkpoint = {
+        'd_model': model.d_model,
+        'num_layers': model.num_layers,
+        'num_heads': model.num_heads,
+        'embs_npa': model.embs_npa,
+        'state_dict': model.state_dict()
+    }
+    torch.save(checkpoint, model_save_path)
+
+
+def load_transformer_model(model_save_path):
+    checkpoint = torch.load(model_save_path)
+    model = Transformer(
+        d_model = checkpoint['d_model'],
+        num_layers = checkpoint['num_layers'],
+        num_heads = checkpoint['num_heads'],
+        embs_npa = checkpoint['embs_npa']
+    )
+    model.load_state_dict(checkpoint['state_dict'])
+
+    return model

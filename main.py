@@ -5,12 +5,13 @@ import constants
 from data.Dataset import Dataset
 from data.GetEmbeddings import getEmbeddings
 from networks.StartingNetwork import BaseNetwork
-from networks.transformer import Transformer
-from train_functions.starting_train import starting_train
+from networks.transformer import Transformer, load_transformer_model, save_transformer_model
+from train_functions.starting_train import starting_train, evaluate
 import torch
 from sklearn.model_selection import train_test_split
 import pandas as pd
 import sys
+from datetime import datetime
 
 
 def main():
@@ -42,9 +43,9 @@ def main():
 
     # # TODO Load pretrained model
     if len(sys.argv) != 1:
-        pass
-    #     model = torch.load(sys.argv[1])
-
+        # load
+        model = load_transformer_model(sys.argv[1])
+        print("model loaded")
 
     # Train new model
     else:
@@ -65,11 +66,35 @@ def main():
             device=device
         )
 
-        model_save_path = f'{model.__class__.__name__}-model-{num_layers}-n_layers-{num_heads}-heads-{constants.EPOCHS}-epochs.pt'
-        torch.save(model.state_dict(), model_save_path)
+        # Create pretrained directory if not yet created
+        if not os.path.isdir(constants.PRETRAINED_DIR):
+            os.mkdir(constants.PRETRAINED_DIR)
+
+        now = datetime.now()
+        datetime_str = now.strftime("%m-%d-%H-%M-%S")
+        model_save_path = os.path.join(
+            constants.PRETRAINED_DIR,
+            f'{datetime_str}-{model.__class__.__name__}-model-{num_layers}-layers-{num_heads}-heads-{constants.EPOCHS}-epochs.pt'
+        )
+        print('model_save_path', model_save_path)
+        save_transformer_model(model_save_path, model)
+        print(f"model saved at {datetime_str}")
 
     # inference, evaluate model
+    print("evaluating model")
     model.eval()
+    correct = 0
+
+    # TODO: temporarily just use val_dataset
+    test_loader = torch.utils.data.DataLoader(
+        val_dataset, batch_size=constants.BATCH_SIZE, shuffle=True
+    )
+
+    loss_fn = torch.nn.BCELoss()
+    test_loss, test_accuracy = evaluate(test_loader, model, loss_fn, device)
+
+    print("Final test_loss: ", test_loss)
+    print("Final test_accuracy ", test_accuracy)
 
 
 if __name__ == "__main__":
