@@ -12,9 +12,11 @@ from sklearn.model_selection import train_test_split
 import pandas as pd
 import sys
 from datetime import datetime
-
+from load_args import load_args
 
 def main():
+
+    args = load_args()
     # 1st arg is pretrained model path
     # Get command line arguments
     hyperparameters = {"epochs": constants.EPOCHS, "batch_size": constants.BATCH_SIZE}
@@ -24,6 +26,8 @@ def main():
     print("Batch size:", constants.BATCH_SIZE)
 
     embeddings_path = 'glove.6B.50d.txt'
+    if args.embs_path:
+        embeddings_path = args.embs_path
     pad_token = '<pad>'
     unk_token = '<unk>'
     max_seq_length = 134
@@ -32,6 +36,8 @@ def main():
 
     # Initalize dataset and model.
     data_path = "dev.csv"
+    if args.data_file:
+        data_path = args.data_file
     df = pd.read_csv(data_path)
     x = df['question_text'].array  # turn into array to remove the randomized indexing of pd.Series
     y = df['target'].array
@@ -42,9 +48,9 @@ def main():
     val_dataset = Dataset(x_test, y_test, vocab_npa, pad_token, unk_token)
 
     # # TODO Load pretrained model
-    if len(sys.argv) != 1:
+    if args.pretrained_model:
         # load
-        model = load_transformer_model(sys.argv[1])
+        model = load_transformer_model(args.pretrained_model)
         model.to(device)
         print("model loaded")
 
