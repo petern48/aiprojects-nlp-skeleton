@@ -21,6 +21,7 @@ def main():
     # Get command line arguments
     hyperparameters = {"epochs": constants.EPOCHS, "batch_size": constants.BATCH_SIZE}
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"Device set as {device}")
 
     print("Epochs:", constants.EPOCHS)
     print("Batch size:", constants.BATCH_SIZE)
