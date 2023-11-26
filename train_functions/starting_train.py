@@ -18,6 +18,7 @@ def starting_train(train_dataset, val_dataset, model, hyperparameters, n_eval, d
         n_eval:          Interval at which we evaluate our model.
     """
     model.train()
+    print("device in starting_train ", device)
 
     # Get keyword arguments
     batch_size, epochs = hyperparameters["batch_size"], hyperparameters["epochs"]
