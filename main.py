@@ -45,6 +45,7 @@ def main():
     if len(sys.argv) != 1:
         # load
         model = load_transformer_model(sys.argv[1])
+        model.to(device)
         print("model loaded")
 
     # Train new model
@@ -83,7 +84,6 @@ def main():
     # inference, evaluate model
     print("evaluating model")
     model.eval()
-    correct = 0
 
     # TODO: temporarily just use val_dataset
     test_loader = torch.utils.data.DataLoader(
