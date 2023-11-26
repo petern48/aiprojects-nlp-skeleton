@@ -45,6 +45,7 @@ def main():
     if len(sys.argv) != 1:
         # load
         model = load_transformer_model(sys.argv[1])
+        model.to(device)
         print("model loaded")
 
     # Train new model
