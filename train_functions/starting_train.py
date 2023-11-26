@@ -48,6 +48,8 @@ def starting_train(train_dataset, val_dataset, model, hyperparameters, n_eval, d
 
             samples.to(device)
             labels.to(device)
+            print("samples device ", samples.get_device())
+            print("labels device", labels.get_device())
             outputs = model(samples)
 
             labels = labels.reshape(-1,1).float()
