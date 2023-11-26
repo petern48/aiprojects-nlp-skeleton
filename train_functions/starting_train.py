@@ -18,6 +18,7 @@ def starting_train(train_dataset, val_dataset, model, hyperparameters, n_eval, d
         n_eval:          Interval at which we evaluate our model.
     """
     model.train()
+    print("device in starting_train ", device)
 
     # Get keyword arguments
     batch_size, epochs = hyperparameters["batch_size"], hyperparameters["epochs"]
@@ -44,12 +45,10 @@ def starting_train(train_dataset, val_dataset, model, hyperparameters, n_eval, d
         # Loop over each batch in the dataset
         for batch in tqdm(train_loader):  # show the times for each batch
             # Forward propagate
-            samples, labels = batch['input_ids'], batch['labels']
+            samples, labels = batch['input_ids'].to(device), batch['labels'].to(device)
 
-            samples.to(device)
-            labels.to(device)
-            print("samples device ", samples.get_device())
-            print("labels device", labels.get_device())
+            # print("samples device ", samples.get_device())
+            # print("labels device", labels.get_device())
             outputs = model(samples)
 
             labels = labels.reshape(-1,1).float()
@@ -110,9 +109,7 @@ def evaluate(val_loader, model, loss_fn, device):
 
     """
     for batch in tqdm(val_loader):
-        val_samples, val_labels = batch['input_ids'], batch['labels']
-        val_samples.to(device)
-        val_labels.to(device)
+        val_samples, val_labels = batch['input_ids'].to(device), batch['labels'].to(device)
 
         outputs = model(val_samples)
         val_labels = val_labels.reshape(-1, 1).float()
