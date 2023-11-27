@@ -1,12 +1,12 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from tqdm import tqdm
+# from tqdm import tqdm
 from torch.utils.tensorboard import SummaryWriter
 import sys
 
 
-def starting_train(train_dataset, val_dataset, model, hyperparameters, n_eval, device):
+def starting_train(train_dataset, val_dataset, model, hyperparameters, n_eval, device, using_notebook=False):
     """
     Trains and evaluates a model.
 
@@ -17,6 +17,11 @@ def starting_train(train_dataset, val_dataset, model, hyperparameters, n_eval, d
         hyperparameters: Dictionary containing hyperparameters.
         n_eval:          Interval at which we evaluate our model.
     """
+    if usingNotebook:
+        import tqdm.notebook as tqdm
+    else:
+        import tqdm
+
     model.train()
     print("device in starting_train ", device)
 
@@ -43,7 +48,8 @@ def starting_train(train_dataset, val_dataset, model, hyperparameters, n_eval, d
         print(f"Epoch {epoch + 1} of {epochs}")
 
         # Loop over each batch in the dataset
-        for batch in tqdm(train_loader):  # show the times for each batch
+        progress_bar = tqdm(train_loader)
+        for batch in progress_bar:  # show the times for each batch
             # Forward propagate
             samples, labels = batch['input_ids'].to(device), batch['labels'].to(device)
 
@@ -62,6 +68,7 @@ def starting_train(train_dataset, val_dataset, model, hyperparameters, n_eval, d
             # Periodically evaluate our model + log to Tensorboard
             if step % n_eval == 0:
                 print(f"Train Epoch {epoch} Loss {loss.item()}")
+                progress_bar.set_description(f"Epoch {epoch} with Training Loss {loss.item()}")
                 # Compute training loss and accuracy.
                 # Log the results to Tensorboard.
                 accuracy = compute_accuracy(outputs, labels)

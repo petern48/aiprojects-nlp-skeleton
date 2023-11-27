@@ -72,6 +72,7 @@ def main():
             hyperparameters=hyperparameters,
             n_eval=constants.N_EVAL,
             device=device
+            using_notebook=args.using_notebook
         )
 
         # Create pretrained directory if not yet created
