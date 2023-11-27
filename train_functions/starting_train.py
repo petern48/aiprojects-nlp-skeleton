@@ -2,6 +2,8 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 # from tqdm import tqdm
+# from tqdm.notebook import tqdm
+from tqdm.autonotebook import tqdm
 from torch.utils.tensorboard import SummaryWriter
 import sys
 
@@ -17,13 +19,12 @@ def starting_train(train_dataset, val_dataset, model, hyperparameters, n_eval, d
         hyperparameters: Dictionary containing hyperparameters.
         n_eval:          Interval at which we evaluate our model.
     """
-    if usingNotebook:
-        import tqdm.notebook as tqdm
-    else:
-        import tqdm
+    # if using_notebook:
+    #     from tqdm.notebook import tqdm
+    # else:
+    #     from tqdm import tqdm
 
     model.train()
-    print("device in starting_train ", device)
 
     # Get keyword arguments
     batch_size, epochs = hyperparameters["batch_size"], hyperparameters["epochs"]
@@ -114,7 +115,6 @@ def compute_accuracy(outputs, labels):
 def evaluate(val_loader, model, loss_fn, device):
     """
     Computes the loss and accuracy of a model on the validation dataset.
-
     """
     for batch in tqdm(val_loader):
         val_samples, val_labels = batch['input_ids'].to(device), batch['labels'].to(device)
