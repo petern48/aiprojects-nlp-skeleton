@@ -229,13 +229,14 @@ def save_transformer_model(model_save_path, model):
     torch.save(checkpoint, model_save_path)
 
 
-def load_transformer_model(model_save_path):
+def load_transformer_model(model_save_path, embs_npa):
     checkpoint = torch.load(model_save_path)
     model = Transformer(
         d_model = checkpoint['d_model'],
         num_layers = checkpoint['num_layers'],
         num_heads = checkpoint['num_heads'],
-        embs_npa = checkpoint['embs_npa']
+        # embs_npa = checkpoint['embs_npa']
+        embs_npa = embs_npa
     )
     model.load_state_dict(checkpoint['state_dict'])
 

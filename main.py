@@ -51,9 +51,9 @@ def main():
     # # TODO Load pretrained model
     if args.pretrained_model:
         # load
-        model = load_transformer_model(args.pretrained_model)
+        model = load_transformer_model(args.pretrained_model, embs_npa)
         model.to(device)
-        print("model loaded")
+        print("pretrained model loaded")
 
     # Train new model
     else:
