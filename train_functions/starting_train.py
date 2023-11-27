@@ -61,6 +61,7 @@ def starting_train(train_dataset, val_dataset, model, hyperparameters, n_eval, d
 
             # Periodically evaluate our model + log to Tensorboard
             if step % n_eval == 0:
+                print(f"Train Epoch {epoch} Loss {loss.item()}")
                 # Compute training loss and accuracy.
                 # Log the results to Tensorboard.
                 accuracy = compute_accuracy(outputs, labels)
