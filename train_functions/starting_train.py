@@ -62,26 +62,26 @@ def starting_train(train_dataset, val_dataset, model, hyperparameters, n_eval, d
 
 
             # Periodically evaluate our model + log to Tensorboard
-            # if step % n_eval == 0:
-        print(f"Train Epoch {epoch} Loss {loss.item()}")
-        # Compute training loss and accuracy.
-        # Log the results to Tensorboard.
-        accuracy = compute_accuracy(outputs, labels)
+            if step % n_eval == 0:
+                print(f"Train Epoch {epoch} Loss {loss.item()}")
+                # Compute training loss and accuracy.
+                # Log the results to Tensorboard.
+                accuracy = compute_accuracy(outputs, labels)
 
-        writer.add_scalar('Training Loss', loss, epoch)
-        writer.add_scalar('Training Accuracy', accuracy, epoch)
+                writer.add_scalar('Training Loss', loss, epoch)
+                writer.add_scalar('Training Accuracy', accuracy, epoch)
 
-        with torch.no_grad():
-            model.eval()
-            # Compute validation loss and accuracy.
-            # Log the results to Tensorboard.
-            val_loss, val_accuracy = evaluate(val_loader, model, loss_fn, device)
-            writer.add_scalar('Validation Loss', val_loss, epoch)
-            writer.add_scalar('Validation Accuracy', val_accuracy, epoch)
+                with torch.no_grad():
+                    model.eval()
+                    # Compute validation loss and accuracy.
+                    # Log the results to Tensorboard.
+                    val_loss, val_accuracy = evaluate(val_loader, model, loss_fn, device)
+                    writer.add_scalar('Validation Loss', val_loss, epoch)
+                    writer.add_scalar('Validation Accuracy', val_accuracy, epoch)
 
-            # print(f"Validation Loss {val_loss}")
-            # print(f"Validation Accuracy {val_accuracy}")
-            model.train()
+                    print(f"Validation Loss {val_loss}")
+                    print(f"Validation Accuracy {val_accuracy}")
+                    model.train()
 
         step += 1
 
