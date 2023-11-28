@@ -1,14 +1,14 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
-# from tqdm import tqdm
+from tqdm import tqdm
 # from tqdm.notebook import tqdm
-from tqdm.autonotebook import tqdm
+# from tqdm.autonotebook import tqdm
 from torch.utils.tensorboard import SummaryWriter
 import sys
 
 
-def starting_train(train_dataset, val_dataset, model, hyperparameters, n_eval, device, using_notebook=False):
+def starting_train(train_dataset, val_dataset, model, hyperparameters, n_eval, device):
     """
     Trains and evaluates a model.
 
@@ -19,10 +19,6 @@ def starting_train(train_dataset, val_dataset, model, hyperparameters, n_eval, d
         hyperparameters: Dictionary containing hyperparameters.
         n_eval:          Interval at which we evaluate our model.
     """
-    # if using_notebook:
-    #     from tqdm.notebook import tqdm
-    # else:
-    #     from tqdm import tqdm
 
     model.train()
 
@@ -49,8 +45,7 @@ def starting_train(train_dataset, val_dataset, model, hyperparameters, n_eval, d
         print(f"Epoch {epoch + 1} of {epochs}")
 
         # Loop over each batch in the dataset
-        progress_bar = tqdm(train_loader)
-        for batch in progress_bar:  # show the times for each batch
+        for batch in tqdm(train_loader, disable=True):  # show the times for each batch
             # Forward propagate
             samples, labels = batch['input_ids'].to(device), batch['labels'].to(device)
 
@@ -67,29 +62,28 @@ def starting_train(train_dataset, val_dataset, model, hyperparameters, n_eval, d
 
 
             # Periodically evaluate our model + log to Tensorboard
-            if step % n_eval == 0:
-                print(f"Train Epoch {epoch} Loss {loss.item()}")
-                progress_bar.set_description(f"Epoch {epoch} with Training Loss {loss.item()}")
-                # Compute training loss and accuracy.
-                # Log the results to Tensorboard.
-                accuracy = compute_accuracy(outputs, labels)
+            # if step % n_eval == 0:
+        print(f"Train Epoch {epoch} Loss {loss.item()}")
+        # Compute training loss and accuracy.
+        # Log the results to Tensorboard.
+        accuracy = compute_accuracy(outputs, labels)
 
-                writer.add_scalar('Training Loss', loss, epoch)
-                writer.add_scalar('Training Accuracy', accuracy, epoch)
+        writer.add_scalar('Training Loss', loss, epoch)
+        writer.add_scalar('Training Accuracy', accuracy, epoch)
 
-                with torch.no_grad():
-                    model.eval()
-                    # Compute validation loss and accuracy.
-                    # Log the results to Tensorboard.
-                    val_loss, val_accuracy = evaluate(val_loader, model, loss_fn, device)
-                    writer.add_scalar('Validation Loss', val_loss, epoch)
-                    writer.add_scalar('Validation Accuracy', val_accuracy, epoch)
+        with torch.no_grad():
+            model.eval()
+            # Compute validation loss and accuracy.
+            # Log the results to Tensorboard.
+            val_loss, val_accuracy = evaluate(val_loader, model, loss_fn, device)
+            writer.add_scalar('Validation Loss', val_loss, epoch)
+            writer.add_scalar('Validation Accuracy', val_accuracy, epoch)
 
-                    # print(f"Validation Loss {val_loss}")
-                    # print(f"Validation Accuracy {val_accuracy}")
-                    model.train()
+            # print(f"Validation Loss {val_loss}")
+            # print(f"Validation Accuracy {val_accuracy}")
+            model.train()
 
-            step += 1
+        step += 1
 
         print()
 
@@ -116,7 +110,7 @@ def evaluate(val_loader, model, loss_fn, device):
     """
     Computes the loss and accuracy of a model on the validation dataset.
     """
-    for batch in tqdm(val_loader):
+    for batch in val_loader:
         val_samples, val_labels = batch['input_ids'].to(device), batch['labels'].to(device)
 
         outputs = model(val_samples)

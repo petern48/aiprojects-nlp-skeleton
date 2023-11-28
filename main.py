@@ -48,7 +48,6 @@ def main():
     train_dataset = Dataset(x_train, y_train, vocab_npa, pad_token, unk_token)
     val_dataset = Dataset(x_test, y_test, vocab_npa, pad_token, unk_token)
 
-    # # TODO Load pretrained model
     if args.pretrained_model:
         # load
         model = load_transformer_model(args.pretrained_model, embs_npa)
@@ -71,8 +70,7 @@ def main():
             model=model,
             hyperparameters=hyperparameters,
             n_eval=constants.N_EVAL,
-            device=device,
-            using_notebook=args.using_notebook
+            device=device
         )
 
         # Create pretrained directory if not yet created
