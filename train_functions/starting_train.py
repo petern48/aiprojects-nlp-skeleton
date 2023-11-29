@@ -45,7 +45,7 @@ def starting_train(train_dataset, val_dataset, model, hyperparameters, n_eval, d
         print(f"Epoch {epoch + 1} of {epochs}")
 
         # Loop over each batch in the dataset
-        for batch in tqdm(train_loader, disable=True):  # show the times for each batch
+        for batch_idx, batch in enumerate(tqdm(train_loader, disable=True)):  # show the times for each batch
             # Forward propagate
             samples, labels = batch['input_ids'].to(device), batch['labels'].to(device)
 
@@ -60,10 +60,13 @@ def starting_train(train_dataset, val_dataset, model, hyperparameters, n_eval, d
             optimizer.step()
             optimizer.zero_grad()  # reset gradients before next iteration
 
+            print(f"Train Epoch {epoch} Loss {loss.item()}")
+            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
+            epoch, batch_idx * step, len(train_loader.dataset),
+            100. * batch_idx / len(train_loader), loss.item()))
 
             # Periodically evaluate our model + log to Tensorboard
             if step % n_eval == 0:
-                print(f"Train Epoch {epoch} Loss {loss.item()}")
                 # Compute training loss and accuracy.
                 # Log the results to Tensorboard.
                 accuracy = compute_accuracy(outputs, labels)
@@ -71,19 +74,19 @@ def starting_train(train_dataset, val_dataset, model, hyperparameters, n_eval, d
                 writer.add_scalar('Training Loss', loss, epoch)
                 writer.add_scalar('Training Accuracy', accuracy, epoch)
 
+                # Compute validation loss and accuracy.
+                # Log the results to Tensorboard.
                 with torch.no_grad():
                     model.eval()
-                    # Compute validation loss and accuracy.
-                    # Log the results to Tensorboard.
                     val_loss, val_accuracy = evaluate(val_loader, model, loss_fn, device)
-                    writer.add_scalar('Validation Loss', val_loss, epoch)
-                    writer.add_scalar('Validation Accuracy', val_accuracy, epoch)
-
-                    print(f"Validation Loss {val_loss}")
-                    print(f"Validation Accuracy {val_accuracy}")
                     model.train()
+                writer.add_scalar('Validation Loss', val_loss, epoch)
+                writer.add_scalar('Validation Accuracy', val_accuracy, epoch)
 
-        step += 1
+                print(f"Validation Loss {val_loss}")
+                print(f"Validation Accuracy {val_accuracy}")
+
+            step += 1
 
         print()
 
@@ -100,7 +103,7 @@ def compute_accuracy(outputs, labels):
     Example output:
         0.75
     """
-
+    # look into f1 score
     n_correct = (torch.round(outputs) == labels).sum().item()
     n_total = len(outputs)
     return n_correct / n_total
@@ -115,7 +118,7 @@ def evaluate(val_loader, model, loss_fn, device):
 
         outputs = model(val_samples)
         val_labels = val_labels.reshape(-1, 1).float()
-        val_loss = loss_fn(outputs, val_labels)
+        val_loss = loss_fn(outputs, val_labels).item()  # change tensor to single val
 
         val_accuracy = compute_accuracy(outputs, val_labels)
 
