@@ -36,7 +36,7 @@ def main():
     embs_dim = embs_npa.shape[1]
 
     # Initalize dataset and model.
-    data_path = "train.csv"
+    data_path = "dev.csv"
     if args.data_file:
         data_path = args.data_file
     df = pd.read_csv(data_path)
