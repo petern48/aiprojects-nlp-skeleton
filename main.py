@@ -36,10 +36,15 @@ def main():
     embs_dim = embs_npa.shape[1]
 
     # Initalize dataset and model.
-    data_path = "dev.csv"
+    data_path = "train.csv"
     if args.data_file:
         data_path = args.data_file
     df = pd.read_csv(data_path)
+
+    # get equal num_true number of each false and true value for the data
+    num_trues = len(df.loc[df["target"]==1])
+    df = df.groupby("target").head(num_trues)
+
     x = df['question_text'].array  # turn into array to remove the randomized indexing of pd.Series
     y = df['target'].array
     # split will be consistent across multiple rules

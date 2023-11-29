@@ -60,13 +60,12 @@ def starting_train(train_dataset, val_dataset, model, hyperparameters, n_eval, d
             optimizer.step()
             optimizer.zero_grad()  # reset gradients before next iteration
 
-            print(f"Train Epoch {epoch} Loss {loss.item()}")
-            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
-            epoch, batch_idx * step, len(train_loader.dataset),
-            100. * batch_idx / len(train_loader), loss.item()))
-
             # Periodically evaluate our model + log to Tensorboard
             if step % n_eval == 0:
+                print(f"Train Epoch {epoch} Loss {loss.item()}")
+                print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
+                epoch, batch_idx * step, len(train_loader.dataset),
+                100. * batch_idx / len(train_loader), loss.item()))
                 # Compute training loss and accuracy.
                 # Log the results to Tensorboard.
                 accuracy = compute_accuracy(outputs, labels)
